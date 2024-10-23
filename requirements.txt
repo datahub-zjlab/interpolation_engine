@@ -1,0 +1,14 @@
+contextily
+geopandas
+geopy
+matplotlib
+memory_profiler
+MetPy
+numpy
+pandas
+photutils
+psutil
+PyKrige
+pyodps
+scikit-learn
+scipy

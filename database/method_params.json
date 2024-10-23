@@ -1,0 +1,73 @@
+{"methods":
+  {
+    "nn": {
+      "params": [],
+      "name": "最近邻插值法",
+      "id": "nn"
+    },
+
+    "polynomial": {
+      "params": [
+        {
+          "id": "n_closest_points", "name": "邻居点个数", 
+          "value": [{"name": "5", "value": "5"}, {"name": "16", "value": "16"}]
+        },
+        {
+          "id": "degree", "name": "多项式次数", 
+          "value": [{"name": "2", "value": "2"}, {"name": "3", "value": "3"}]
+        }
+      ],
+      "name": "局部多项式插值法",
+      "id": "polynomial"
+    },
+
+    "rbf": {
+      "params": [
+        {
+          "id": "function", 
+          "name": "径向基函数", 
+          "value": [{"name": "multiquadric", "value": "multiquadric"},
+                    {"name": "gaussian", "value": "gaussian"},
+                    {"name": "linear", "value": "linear"}]
+        }
+      ]
+    },
+
+    "triangle": {
+      "params": [],
+      "name": "线性插值三角网法",
+      "id": "triangle"
+    },
+
+    "min_curvature": {
+      "params": [],
+      "name": "最小曲率法",
+      "id": "min_curvature"
+    },
+
+    "DM": {
+      "params": [
+        {
+          "id": "function", "name": "数据度量方法", 
+          "value": [
+            {"name": "最小值插值法", "value": "min"},
+            {"name": "最大值插值法", "value": "max"},
+            {"name": "四分之一插值法", "value": "Q1"},
+            {"name": "四分之三插值法", "value": "Q3"},
+            {"name": "平均值插值法", "value": "mean"},
+            {"name": "方差插值法", "value": "var"},
+            {"name": "标准差插值法", "value": "std"},
+            {"name": "中位数插值法", "value": "median"}
+          ]
+        }
+      ]
+    },
+
+    "natural_neighbor": {
+      "params": [],
+      "name": "自然邻点",
+      "id": "natural_neighbor"
+    }
+
+  }    
+}

@@ -1,0 +1,33 @@
+--name:tri
+--author:Administrator
+--create time:2024-06-20 15:44
+with partOrigin as (
+  select index, lat, lon, value from meanorigindata where
+  datasetname="纽芬兰" and
+  grid_length=1 and name="SiO2" and
+  aggregate_func="mean"
+),
+m as (
+  select tri_index, insert_point_index from OrigindataMapTriangle where datasetname="纽芬兰" and grid_length=1 and name="SiO2"
+),
+ins as (
+  select box_index, box_lat, box_lon from insertdata where datasetname="纽芬兰" and grid_length=1
+)
+insert into result(box_index, box_lat, box_lon, value, method_id)
+select box_index, box_lat, box_lon, array(point1_lat, point1_lon, point1_value, point2_lat, point2_lon, point2_value, point3_lat, point3_lon, point3_value), box_lat, box_lon, 111 from
+(
+  select
+      t.tri_index,
+      t1.lat AS point1_lat, t1.lon AS point1_lon, t1.value AS point1_value,
+      t2.lat AS point2_lat, t2.lon AS point2_lon, t2.value AS point2_value,
+      t3.lat AS point3_lat, t3.lon AS point3_lon, t3.value AS point3_value
+  FROM
+      (select tri_index, point1, point2, point3 from Triangle where datasetname="纽芬兰" and name="SiO2") t
+  JOIN
+      partOrigin t1 ON t.point1 = t1.index
+  JOIN
+      partOrigin t2 ON t.point2 = t2.index
+  JOIN
+      partOrigin t3 ON t.point3 = t3.index
+) tri, ins join m on m.tri_index=tri.tri_index and ins.box_index=m.insert_point_index
+;

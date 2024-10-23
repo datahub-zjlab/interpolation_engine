@@ -1,0 +1,97 @@
+--name:yjy_script_example
+--author:admin
+--create time:2024-06-13 09:59
+
+set odps.sql.allow.cartesian=true;
+--SET in_predicate_conversion_threshold=2;
+Set odps.sql.python.version=cp37;
+set odps.sql.reducer.cpu=100;
+set odps.sql.reducer.memory=1024;
+set odps.sql.reducer.instances=100;
+set odps.sql.mapper.split.size=1;
+set odps.sql.mapper.cpu=100;
+set odps.sql.mapper.memory=1024;
+
+with to_search as (
+    select tmp.box_index, tmp.box_x, tmp.box_y, tmp.box_lat, tmp.box_lon
+    from insertdata as tmp
+    where tmp.datasetname = '纽芬兰'
+    and tmp.grid_length = 2),
+grid as (
+    select tmp.box_x, tmp.box_y, tmp.box_index, tmp.box_lat, tmp.box_lon
+    from insertdata as tmp
+    where tmp.datasetname = '纽芬兰'
+    and tmp.grid_length = 8),
+mapp as (
+    select index, box_index
+    from origindatamapinsert
+    where datasetname = '纽芬兰'
+    and grid_length = 8)
+
+    select box_index, val
+    from (select ts.box_index, dointerpolate(ts.box_lat, ts.box_lon,
+            findneigh(orig.lat, orig.lon, ts.box_lat, ts.box_lon, orig.value, 5),
+            5, 'linear', array(9.58457046877956,94.6042960475346)) as val
+          from to_search as ts, meanorigindata as orig, (
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x and
+              mapp.box_index % 59 = grid.box_y
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x-1 and
+              mapp.box_index % 59 = grid.box_y
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x and
+              mapp.box_index % 59 = grid.box_y-1
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x+1 and
+              mapp.box_index % 59 = grid.box_y
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x and
+              mapp.box_index % 59 = grid.box_y+1
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x-1 and
+              mapp.box_index % 59 = grid.box_y-1
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x+1 and
+              mapp.box_index % 59 = grid.box_y+1
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x+1 and
+              mapp.box_index % 59 = grid.box_y-1
+              union
+              select grid.box_index as b_idx, mapp.index as m_idx
+              from    mapp, grid
+              where
+              mapp.box_index div 59 = grid.box_x-1 and
+              mapp.box_index % 59 = grid.box_y+1
+          ) as nei
+          where ((ts.box_x div 8)*59 + ts.box_y div 8) = nei.b_idx
+              and orig.index = nei.m_idx
+--              and orig.index div 2 div 3 * 4 + orig.index % 2 div 3 = nei.m_idx
+              and orig.name='SiO2'
+              and orig.aggregate_func='mean'
+              and orig.grid_length=1
+    group by ts.box_index, ts.box_lat, ts.box_lon)
+where val is not null;
